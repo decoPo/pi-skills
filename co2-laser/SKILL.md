@@ -18,17 +18,32 @@ description: CO2 medical laser firmware project context. STM32F4 bare-metal firm
 
 ```
 D:/mydoc/co2-stm32/
-├── FW/                    Firmware (main focus)
-│   ├── laser/             Main application (Src/, Inc/)
-│   ├── driverlib/         Low-level peripheral drivers
-│   ├── xlib/              Debug utility (printf via UART)
-│   ├── HW/                Board abstraction (hw.h, PCB_LASER3_2.h)
+├── FW/                        Firmware (main focus)
+│   ├── CMakeLists.txt         Top-level CMake (ACTIVE_PROJECT, BOARD_VARIANT)
+│   ├── CMakePresets.json      Build presets (laser, laser_discovery, 01_led, 02_debug)
+│   ├── cmake/                 Build system
+│   │   ├── arm-gcc-toolchain.cmake   Cortex-M4F cross-compilation
+│   │   ├── hal.cmake                 STM32F4 HAL static library
+│   │   ├── usb.cmake                 USB CDC middleware + glue
+│   │   └── project_template.cmake    stm32f4_add_executable() function
+│   ├── Shared/                Common files for all projects
+│   │   ├── inc/               stm32f4xx_hal_conf.h
+│   │   ├── src/               system_stm32f4xx.c, syscalls.c, sysmem.c, hal_msp.c
+│   │   ├── startup/           startup_stm32f405xx.s, startup_stm32f407xx.s
+│   │   └── linker/            STM32F405RGTX_FLASH.ld, STM32F407VGTX_FLASH.ld
+│   ├── Projects/
+│   │   ├── laser/             Main application (Src/, Inc/, CMakeLists.txt)
+│   │   ├── 01_led/            Test projects (each with Src/, Inc/, CMakeLists.txt)
+│   │   ├── 02_debug/
+│   │   └── 03_buttons..13_faults/
+│   ├── driverlib/             Low-level peripheral drivers + USB_CDC/ glue
+│   ├── HW/                    Board abstraction (hw.h → PCB/PCB_LASER3_2.h)
 │   ├── STM32Cube_FW_F4_V1.28.1/  HAL drivers + USB middleware
-│   └── 01_led..13_faults  Test/demo projects per peripheral
-├── SW/DCM_test/           C# WinForms test application
-├── HW/                    Altium PCB design files
-├── doc/                   Datasheets, schematics, protocol diagrams
-└── process/               EN 62304 lifecycle docs (SDMP, backlog, SVP/SVR, checklists)
+│   └── .vscode/               VSCode config (settings, tasks, launch, IntelliSense)
+├── SW/DCM_test/               C# WinForms test application
+├── HW/                        Altium PCB design files
+├── doc/                       Datasheets, schematics, protocol diagrams
+└── process/                   EN 62304 lifecycle docs (SDMP, backlog, SVP/SVR, checklists)
 ```
 
 ## Architecture
@@ -38,7 +53,7 @@ Host PC (GUI) <──USB CDC──> STM32F405/F407 (LaserBoard v3.2/v3.3) ──
 ```
 
 - **MCU**: STM32F405RG (production board) / STM32F407VG (discovery dev board)
-- **Build**: Currently STM32CubeIDE (Eclipse), migration to CMake planned (FW-111)
+- **Build**: CMake + Ninja + arm-none-eabi-gcc (VSCode, migrated from STM32CubeIDE in FW-111)
 - **No RTOS**: Bare-metal super loop with cooperative task scheduling
 - **Current FW version**: v3.0.8
 
